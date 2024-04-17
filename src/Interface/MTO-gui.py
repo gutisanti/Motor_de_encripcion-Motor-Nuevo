@@ -4,6 +4,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.textinput import TextInput
+from kivy.core.clipboard import Clipboard
 
 import sys
 sys.path.append("src")
@@ -54,7 +55,8 @@ class MainScreen(Screen):
         self.manager.current = 'main'  # Acceder al ScreenManager a través de la app
 
 
-# Define Screen One
+
+
 class ScreenOne(Screen):
     def __init__(self, **kwargs):
         super(ScreenOne, self).__init__(**kwargs)
@@ -71,11 +73,13 @@ class ScreenOne(Screen):
                       size_hint_y=None,
                       height=100,
                       text='Escriba aqui lo que desea encriptar')
+        self.Texto.bind(focus=self.on_text_focus)  # Agregar el enlace al evento on_focus
         layout.add_widget(self.Texto)
         self.Texto2 = TextInput(font_size=40,
                       size_hint_y=None,
                       height=100,
                       text='Escriba aqui la contraseña')
+        self.Texto2.bind(focus=self.on_text_focus) 
         layout.add_widget(self.Texto2) 
         layout2 = GridLayout(cols=2, padding=20, spacing=20)
         encrypt_button = Button(text="Encriptar", font_size=20)
@@ -95,17 +99,32 @@ class ScreenOne(Screen):
         self.add_widget(self.widgets)  # Agregar los widgets guardados
 
     def go_back_to_main(self, instance):
-        self.manager.current = 'main'  # Access ScreenManager through app
+        self.manager.current = 'main'  # Acceso al ScreenManager a través de la app
+        # Limpiar los campos de texto
+        self.Texto.text = 'Escriba aqui lo que desea encriptar'
+        self.Texto2.text = 'Escriba aqui la contraseña'
+        # Restablecer el texto inicial de la etiqueta
+        self.etiqueta.text = "Encriptar mensaje"
         
-        
-
     def EncriptMessage(self, value):
         try:
-            self.etiqueta.text = "Hola"
-        except Exception as err:
-            self.etiqueta.text = Exception
+            message = self.Texto.text
+            password = self.Texto2.text
+            encrypted_message = encrypt_message(message, password)
+            self.etiqueta.text = "Mensaje encriptado: " + encrypted_message
+            # Habilitar la copia del mensaje encriptado al portapapeles
+            Clipboard.copy(encrypted_message)
+        except EncryptionError as e:
+            self.etiqueta.text = "Error al encriptar el mensaje: " + str(e)
+    
+    def on_text_focus(self, instance, focused):
+        if focused:
+            if instance.text == 'Escriba aqui lo que desea encriptar':
+                instance.text = ''  # Borrar el texto inicial cuando se enfoca el campo de texto
+        if focused:
+            if instance.text == 'Escriba aqui la contraseña':
+                instance.text = ''  # Borrar el texto inicial cuando se enfoca el campo de texto
 
-# Define Screen Two
 class ScreenTwo(Screen):
     def __init__(self, **kwargs):
         super(ScreenTwo, self).__init__(**kwargs)
@@ -116,16 +135,18 @@ class ScreenTwo(Screen):
                       size_hint_y=None,
                       height=100,
                       text='Escriba aqui lo que desea desencriptar')
+        self.Texto.bind(focus=self.on_text_focus)  # Agregar el enlace al evento on_focus
         layout.add_widget(self.Texto)
         self.Texto2 = TextInput(font_size=40,
                       size_hint_y=None,
                       height=100,
                       text='Escriba aqui la contraseña')
+        self.Texto2.bind(focus=self.on_text_focus) 
         layout.add_widget(self.Texto2) 
 
         layout2 = GridLayout(cols=2, padding=20, spacing=20)
         decrypt_button = Button(text="Desencriptar", font_size=20)
-        decrypt_button.bind(on_press=self.go_back_to_main)
+        decrypt_button.bind(on_press=self.DesencriptMessage)
         layout2.add_widget(decrypt_button)
         
         back_button = Button(text="Volver a la Principal", font_size=20)
@@ -133,12 +154,37 @@ class ScreenTwo(Screen):
         layout2.add_widget(back_button)
         layout.add_widget(layout2)
 
-
+        self.etiqueta = Label(text='', font_size=20)
+        layout.add_widget(self.etiqueta)  # Añadir la etiqueta para mostrar el mensaje desencriptado
 
         self.add_widget(layout)
 
     def go_back_to_main(self, instance):
-        self.manager.current = 'main'  # Access ScreenManager through app
+        self.manager.current = 'main'  # Acceso al ScreenManager a través de la app
+        # Limpiar los campos de texto
+        self.Texto.text = 'Escriba aqui lo que desea desencriptar'
+        self.Texto2.text = 'Escriba aqui la contraseña'
+        # Restablecer el texto inicial de la etiqueta
+        self.etiqueta.text = "Desencriptar mensaje"
+        
+    def DesencriptMessage(self, value):
+        try:
+            # Obtener el mensaje encriptado del portapapeles
+            ciphertext = Clipboard.paste()
+            password = self.Texto2.text
+            decrypted_message = decrypt_message(ciphertext, password)
+            self.etiqueta.text = "Mensaje desencriptado: " + decrypted_message
+        except DecryptionError as e:
+            self.etiqueta.text = "Error al desencriptar el mensaje: " + str(e)
+    
+    def on_text_focus(self, instance, focused):
+        if focused:
+            if instance.text == 'Escriba aqui lo que desea desencriptar':
+                instance.text = ''  # Borrar el texto inicial cuando se enfoca el campo de texto
+        if focused:
+            if instance.text == 'Escriba aqui la contraseña':
+                instance.text = ''  # Borrar el texto inicial cuando se enfoca el campo de texto
+    
 
 # Create the ScreenManager and add the screens
 class ScreenManagerApp(App):
@@ -158,4 +204,3 @@ class ScreenManagerApp(App):
 
 if __name__ == '__main__':
     ScreenManagerApp().run()
-
