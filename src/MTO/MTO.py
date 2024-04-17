@@ -9,7 +9,7 @@ class EncryptionError(Exception):
     """La clave esta"""
 
 class DecryptionError(Exception):
-    pass
+    """pass"""
 
 def encrypt_message(message, password):
     try:
