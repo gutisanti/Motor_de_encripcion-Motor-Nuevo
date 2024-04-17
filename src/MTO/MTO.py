@@ -9,9 +9,8 @@ class EncryptionError(Exception):
     """Excepción para errores relacionados con la encriptación."""
 
 class DecryptionError(Exception):
-
-
-
+    """Excepción para errores relacionados con la desencriptación."""
+    
     def encrypt_message(message, password):
         try:
             # Verificar que la longitud de la clave sea al menos 4 caracteres
