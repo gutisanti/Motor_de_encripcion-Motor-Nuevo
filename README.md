@@ -76,20 +76,15 @@ Recuerde que cada carpeta de código fuente debe contener un archivo `__init__.p
 - **Ejecución**: 
   - Clona este repositorio en tu máquina local.
   - Pega esta ruta en tu consola.
-  - Para correr la consola del programa: python src\Console\console.py
-  - Para correr la interfaz del programa: python src\Interface\MTO-gui.py
-  - Utiliza las funciones `encrypt_message()` y `decrypt_message()` proporcionadas por el módulo `MTO` para encriptar y desencriptar mensajes respectivamente.
+  
+     -Para correr la consola del programa: python src\Console\console.py
+    
+     -Para correr la interfaz del programa: python src\Interface\MTO-gui.py
+
+      -Para correr las pruebas unitarias del programa:python test\test.py
+  
 
 ## Contribuciones
 
 ¡Las contribuciones son bienvenidas! Si encuentras algún error o tienes alguna sugerencia de mejora, no dudes en abrir un *issue* o enviar un *pull request*.
 
-## Uso
-
--Para ejecutar las pruebas unitarias, desde la carpeta test, use el siguiente comando:
-
-  python test\test.py
-
--Para ejecutar la interfaz desde la carpeta src, use el siguiente comando:
-    
-  python src\Interface\MTO-gui.py
