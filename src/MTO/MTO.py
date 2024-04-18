@@ -62,22 +62,20 @@ def encrypt_message(message, password):
         # Devolver el texto cifrado como base64
         return base64.b64encode(ciphertext).decode()
     except Exception as e:
-        raise EncryptionError("Error al encriptar el mensaje: " + str(e))
+        raise EncryptionError(str(e))
 
 
 
 def decrypt_message(ciphertext, password):
     try:
-        if not ciphertext:
-            raise DecryptionError("El mensaje vacio, por favor rellene el campo")
-        
         if not password:
             raise DecryptionError("La clave está vacía, por favor rellene el campo")
         
         if len(password) < 4:
             raise DecryptionError("La clave debe tener al menos 4 caracteres")
         
-
+        if not ciphertext:
+            raise DecryptionError("El mensaje vacio, por favor rellene el campo")
         
         if ' ' in password:  # Verifica si hay espacios en la contraseña
             raise DecryptionError("La clave no puede contener espacios")
@@ -116,7 +114,10 @@ def decrypt_message(ciphertext, password):
         return unpadded_data.decode()
     
     except (TypeError, binascii.Error):
-        raise DecryptionError("El mensaje cifrado está corrupto o la contraseña es incorrecta")
-    except ValueError:
-        raise DecryptionError("El mensaje cifrado es inválido")
-    
+            raise DecryptionError("El mensaje cifrado está corrupto o la contraseña es incorrecta")
+
+
+
+
+
+
