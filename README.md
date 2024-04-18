@@ -68,7 +68,9 @@ Recuerde que cada carpeta de código fuente debe contener un archivo `__init__.p
 - **Prerrequisitos**: 
   - Python 3.x instalado en su sistema.
   - Bibliotecas de Python necesarias, que se pueden instalar mediante pip de la siguiente manera: (cryptography, kivy).
+    
     -pip install cryptography
+    
     -pip install kivy.app
 
 - **Ejecución**: 
@@ -87,4 +89,5 @@ Recuerde que cada carpeta de código fuente debe contener un archivo `__init__.p
   python test\test.py
 
 -Para ejecutar la interfaz desde la carpeta src, use el siguiente comando:
-    python src\Interface\MTO-gui.py
+    
+  python src\Interface\MTO-gui.py
