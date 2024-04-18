@@ -19,7 +19,7 @@ def main():
                 encrypted_message = encrypt_message(message, password)
                 print("Mensaje encriptado:", encrypted_message)
             except EncryptionError as e:
-                print("Error al encriptar el mensaje:", e)
+                print(e)
         elif choice == "2":
             try:
                 ciphertext = input("Introduzca el mensaje encriptado: ")

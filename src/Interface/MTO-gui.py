@@ -5,6 +5,8 @@ from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.textinput import TextInput
 from kivy.core.clipboard import Clipboard
+from kivy.uix.textinput import TextInput
+from kivy.config import Config
 
 import sys
 sys.path.append("src")
@@ -63,7 +65,7 @@ class ScreenOne(Screen):
         
         self.widgets = self._create_widgets()  # Guarda una copia de los widgets iniciales
         self.update_widgets()
-        
+    
     def _create_widgets(self):    
         # Label and button to return to the main screen
         layout = GridLayout(cols=1, padding=20, spacing=20)
@@ -115,7 +117,7 @@ class ScreenOne(Screen):
             # Habilitar la copia del mensaje encriptado al portapapeles
             Clipboard.copy(encrypted_message)
         except EncryptionError as e:
-            self.etiqueta.text = "Error al encriptar el mensaje: " + str(e)
+            self.etiqueta.text =  str(e)
     
     def on_text_focus(self, instance, focused):
         if focused:
@@ -170,12 +172,12 @@ class ScreenTwo(Screen):
     def DesencriptMessage(self, value):
         try:
             # Obtener el mensaje encriptado del portapapeles
-            ciphertext = Clipboard.paste()
+            ciphertext = self.Texto.text
             password = self.Texto2.text
             decrypted_message = decrypt_message(ciphertext, password)
             self.etiqueta.text = "Mensaje desencriptado: " + decrypted_message
         except DecryptionError as e:
-            self.etiqueta.text = "Error al desencriptar el mensaje: " + str(e)
+            self.etiqueta.text = str(e)
     
     def on_text_focus(self, instance, focused):
         if focused:

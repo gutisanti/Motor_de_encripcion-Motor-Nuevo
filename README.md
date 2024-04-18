@@ -13,17 +13,14 @@ Este maravilloso código fue creado por:
 
 El método de encriptación utilizado es AES (Rijindael), un algoritmo de cifrado simétrico ampliamente utilizado en la actualidad debido a su seguridad y eficiencia.
 
+
 ### Estructura Sugerida
 
 - **Carpeta src**: Contiene el código fuente de la lógica de la aplicación.
   - `MTO.py`: Módulo principal que proporciona funciones para encriptar y desencriptar mensajes.
-- **Carpeta tests**: Contiene las pruebas unitarias para el código fuente.
+  - `console.py`: Módulo con la estructura del main para correr el código.
+  - `MTO-gui.py`: Módulo con toda la lógica visual para correr el programa.
 
-Recuerde que cada carpeta de código fuente debe contener un archivo `__init__.py` que permite que Python reconozca la carpeta como un módulo y pueda hacer import.
-### Estructura Sugerida
-
-- **Carpeta src**: Contiene el código fuente de la lógica de la aplicación.
-  - `MTO.py`: Módulo principal que proporciona funciones para encriptar y desencriptar mensajes.
 - **Carpeta tests**: Contiene las pruebas unitarias para el código fuente.
 
 Recuerde que cada carpeta de código fuente debe contener un archivo `__init__.py` que permite que Python reconozca la carpeta como un módulo y pueda hacer import.
@@ -70,11 +67,13 @@ Recuerde que cada carpeta de código fuente debe contener un archivo `__init__.p
 
 - **Prerrequisitos**: 
   - Python 3.x instalado en su sistema.
-  - Bibliotecas de Python necesarias, que se pueden instalar mediante pip (por ejemplo, cryptography).
+  - Bibliotecas de Python necesarias, que se pueden instalar mediante pip de la siguiente manera: (cryptography, kivy).
+    -pip install cryptography
+    -pip install kivy.app
 
 - **Ejecución**: 
   - Clona este repositorio en tu máquina local.
-  - Importa el módulo `MTO` en tu script de Python.
+  - Importa el módulo `MTO-gui` en tu script de Python.
   - Utiliza las funciones `encrypt_message()` y `decrypt_message()` proporcionadas por el módulo `MTO` para encriptar y desencriptar mensajes respectivamente.
 
 ## Contribuciones
@@ -83,7 +82,9 @@ Recuerde que cada carpeta de código fuente debe contener un archivo `__init__.p
 
 ## Uso
 
-Para ejecutar las pruebas unitarias, desde la carpeta src, use el siguiente comando:
+-Para ejecutar las pruebas unitarias, desde la carpeta test, use el siguiente comando:
 
-```bash
-cleancode-01\src> python -m unittest discover ..\tests -p '*test*.py'
+  python test\test.py
+
+-Para ejecutar la interfaz desde la carpeta src, use el siguiente comando:
+    python src\Interface\MTO-gui.py
