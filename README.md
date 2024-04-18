@@ -71,11 +71,13 @@ Recuerde que cada carpeta de código fuente debe contener un archivo `__init__.p
     
     -pip install cryptography
     
-    -pip install kivy.app
+    -pip install kivy
 
 - **Ejecución**: 
   - Clona este repositorio en tu máquina local.
-  - Importa el módulo `MTO-gui` en tu script de Python.
+  - Pega esta ruta en tu consola.
+  - Para correr la consola del programa: python src\Console\console.py
+  - Para correr la interfaz del programa: python src\Interface\MTO-gui.py
   - Utiliza las funciones `encrypt_message()` y `decrypt_message()` proporcionadas por el módulo `MTO` para encriptar y desencriptar mensajes respectivamente.
 
 ## Contribuciones
