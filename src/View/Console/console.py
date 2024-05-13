@@ -1,7 +1,7 @@
 import sys
 sys.path.append("src")
 
-from MTO.MTO import encrypt_message, decrypt_message, EncryptionError, DecryptionError
+from Model.MTO import encrypt_message, decrypt_message, EncryptionError, DecryptionError
 
 def main():
     while True:

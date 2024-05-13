@@ -11,7 +11,7 @@ from kivy.config import Config
 import sys
 sys.path.append("src")
 
-from MTO.MTO import encrypt_message, decrypt_message, EncryptionError, DecryptionError
+from Model.MTO import encrypt_message, decrypt_message, EncryptionError, DecryptionError
 
 # Define the main screen
 class MainScreen(Screen):
