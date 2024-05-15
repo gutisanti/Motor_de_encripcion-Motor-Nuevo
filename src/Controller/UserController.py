@@ -12,7 +12,7 @@ class ErrorNoEncontrado( Exception ):
     pass
 
 
-def ObtenerCursor( ) :
+def GetCursor( ) :
     """
     Crea la conexion a la base de datos y retorna un cursor para ejecutar instrucciones
     """
@@ -21,46 +21,110 @@ def ObtenerCursor( ) :
     PASSWORD = SecretConfig.PGPASSWORD
     HOST = SecretConfig.PGHOST
     PORT = SecretConfig.PGPORT
-    try:
-        connection = psycopg2.connect(database=DATABASE, user=USER, password=PASSWORD, host=HOST, port=PORT, sslmode = 'require')
-        print("Conectado rey")
-        return connection.cursor()
-    except psycopg2.OperationalError as e:
-        print("Nada manito")
+    
+    connection = psycopg2.connect(database=DATABASE, user=USER, password=PASSWORD, host=HOST, port=PORT, sslmode = 'require')
+    return connection.cursor()
 
-def CrearTabla():
+
+def CreateTable():
     """
     Crea la tabla de usuarios, en caso de que no exista
     """    
 
 
-    cursor = ObtenerCursor()
+    cursor = GetCursor()
     try:
-        cursor.execute(""" create table prueba (
-  cedula varchar( 20 )  NOT NULL,
-  nombre text not null,
-  apellido text not null,
-  telefono varchar(20),
-  correo text,
-  direccion text not null,
-  codigo_municipio varchar(40) not null,
-  codigo_departamento varchar(40) NOT NULL
+        cursor.execute(""" create table propietarios (
+  name text not null,
+  password text not null,
+  mensajeEncriptado text not null
 ); 
 """)
+        
         cursor.connection.commit()
     except:
         # SI LLEGA AQUI, ES PORQUE LA TABLA YA EXISTE
         cursor.connection.rollback()
 
-def EliminarTabla():
+def DeleteTable():
     """
     Borra (DROP) la tabla en su totalidad
     """    
-    sql = "drop table usuarios;"
-    cursor = ObtenerCursor()
-    cursor.execute( sql )
-    sql = "drop table familiares;"
+    sql = "drop table propietarios;"
+    cursor = GetCursor()
     cursor.execute( sql )
     cursor.connection.commit()
 
-ObtenerCursor()
+def InsertData(name,password,mensaje):
+    """
+    Agrega los datos de cada usuario en la tabla
+    """
+    try:
+        cursor = GetCursor()
+        cursor.execute(f"""
+            insert into propietarios (
+                name,  password,  mensajeencriptado
+            )
+            values 
+            (
+                '{name}', '{password}' , '{encrypt_message(mensaje,password)}'
+            );
+                        """)
+            
+        # Las instrucciones DDL y DML no retornan resultados, por eso no necesitan fetchall()
+        # pero si necesitan commit() para hacer los cambios persistentes
+        cursor.connection.commit()
+    except  :
+        cursor.connection.rollback() 
+        raise Exception("No fue posible insertar el usuario : ")
+
+def UpdateTable(name,password,mensaje):
+    """
+    Actualiza los datos de un usuario en la base de datos
+
+    """
+    cursor = GetCursor()
+    cursor.execute(f"""
+        UPDATE propietarios
+        SET password ='{password}', mensajeencriptado ='{encrypt_message(mensaje,password)}'
+        WHERE name ='{name}';
+    """)
+    # Las instrucciones DDL y DML no retornan resultados, por eso no necesitan fetchall()
+    # pero si necesitan commit() para hacer los cambios persistentes
+    cursor.connection.commit()
+
+def SearchByName(name):
+    """
+    Busca los mensajes encriptados por cada usuario 
+    """
+    cursor = GetCursor()
+    print("Conexión establecida")  # Depuración
+    cursor.execute(f"""
+        SELECT name, mensajeencriptado
+        FROM propietarios
+        WHERE name = '{name}';
+    """)
+    print("Consulta ejecutada")  # Depuración
+    
+    filas = cursor.fetchall()
+    resultados = []
+    
+    for fila in filas:
+        resultados.append({"nombre": fila[0], "mensaje_encriptado": fila[1]})
+
+    if not resultados:
+            raise ErrorNoEncontrado("No se encontraron registros para el nombre: " + name)
+        
+        # Imprimir todos los valores encontrados
+    for resultado in resultados:
+            print(f"Nombre: {resultado['nombre']}, Mensaje Encriptado: {resultado['mensaje_encriptado']}")
+
+    return resultados
+
+    
+
+
+GetCursor()
+CreateTable()
+
+resultados = SearchByName("eritz")
