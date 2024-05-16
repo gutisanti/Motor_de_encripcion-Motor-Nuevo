@@ -35,7 +35,8 @@ def CreateTable():
     cursor = GetCursor()
     try:
         cursor.execute(""" create table propietarios (
-  name text not null,
+id SERIAL PRIMARY KEY,  
+name text not null,
   password text not null,
   mensajeEncriptado text not null
 ); 
@@ -50,10 +51,13 @@ def DeleteTable():
     """
     Borra (DROP) la tabla en su totalidad
     """    
-    sql = "drop table propietarios;"
     cursor = GetCursor()
-    cursor.execute( sql )
-    cursor.connection.commit()
+    try:
+        cursor.execute("DROP TABLE IF EXISTS propietarios;")
+        cursor.connection.commit()
+    except Exception as e:
+        cursor.connection.rollback()
+        print(f"Error borrando la tabla: {e}")
 
 def InsertData(name,password,mensaje):
     """
@@ -100,7 +104,7 @@ def SearchByName(name):
     cursor = GetCursor()
     print("Conexión establecida")  # Depuración
     cursor.execute(f"""
-        SELECT name, mensajeencriptado
+        SELECT id,name, mensajeencriptado
         FROM propietarios
         WHERE name = '{name}';
     """)
@@ -110,14 +114,14 @@ def SearchByName(name):
     resultados = []
     
     for fila in filas:
-        resultados.append({"nombre": fila[0], "mensaje_encriptado": fila[1]})
+        resultados.append({"id": fila[0],"nombre": fila[1], "mensaje_encriptado": fila[2]})
 
     if not resultados:
             raise ErrorNoEncontrado("No se encontraron registros para el nombre: " + name)
         
         # Imprimir todos los valores encontrados
     for resultado in resultados:
-            print(f"Nombre: {resultado['nombre']}, Mensaje Encriptado: {resultado['mensaje_encriptado']}")
+            print(f"ID: {resultado['id']}, Nombre: { resultado['nombre']}, Mensaje Encriptado: {resultado['mensaje_encriptado']}")
 
     return resultados
 
