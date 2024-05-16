@@ -10,9 +10,11 @@ import Model.SecretConfig as SecretConfig
 class ErrorNoEncontrado( Exception ):
     """ Excepcion que indica que una fila buscada no fue encontrada"""
     pass
+class ErrorTableCreation( Exception):
+     """ Excepcion que indica que la tabla no fue creada correctamente"""
+     
 
-
-def GetCursor( ) :
+def GetCursor() :
     """
     Crea la conexion a la base de datos y retorna un cursor para ejecutar instrucciones
     """
@@ -30,22 +32,20 @@ def CreateTable():
     """
     Crea la tabla de usuarios, en caso de que no exista
     """    
-
-
     cursor = GetCursor()
     try:
-        cursor.execute(""" create table propietarios (
-id SERIAL PRIMARY KEY,  
-name text not null,
-  password text not null,
-  mensajeEncriptado text not null
-); 
-""")
-        
+        cursor.execute("""CREATE TABLE IF NOT EXISTS propietarios (
+                            id SERIAL PRIMARY KEY,  
+                            name TEXT NOT NULL,
+                            password TEXT NOT NULL,
+                            mensajeEncriptado TEXT NOT NULL
+                        )""")
         cursor.connection.commit()
-    except:
-        # SI LLEGA AQUI, ES PORQUE LA TABLA YA EXISTE
-        cursor.connection.rollback()
+    except Exception as e:
+        # Si se produce un error durante la ejecución de la consulta SQL, se maneja aquí
+        # Lanzamos nuestra propia excepción para indicar que hubo un problema al crear la tabla
+        raise ErrorTableCreation("Error al crear la tabla de usuarios: " + str(e))
+
 
 def DeleteTable():
     """
@@ -125,10 +125,6 @@ def SearchByName(name):
 
     return resultados
 
+
     
 
-
-GetCursor()
-CreateTable()
-
-resultados = SearchByName("eritz")

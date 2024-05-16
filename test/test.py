@@ -1,10 +1,136 @@
 import unittest
-
+from unittest import TestCase, mock
+import psycopg2
 import sys
 sys.path.append("src")
+from Controller.UserController import GetCursor, CreateTable, DeleteTable, InsertData, UpdateTable, SearchByName, ErrorNoEncontrado, ErrorTableCreation
+from Model.MTO import encrypt_message, decrypt_message, EncryptionError, DecryptionError
+from Model import SecretConfig as SecretConfig
 
-from MTO.MTO import encrypt_message, decrypt_message, EncryptionError, DecryptionError
 
+class TestDataBase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        # Configuración inicial para la base de datos
+        cls.conn = psycopg2.connect(
+            database=SecretConfig.PGDATABASE,
+            user=SecretConfig.PGUSER,
+            password=SecretConfig.PGPASSWORD,
+            host=SecretConfig.PGHOST,
+            port=SecretConfig.PGPORT,
+            sslmode='require'
+        )
+        cls.cursor = cls.conn.cursor()
+        CreateTable()
+
+    @classmethod
+    def tearDownClass(cls):
+        # Eliminar la tabla después de las pruebas
+        DeleteTable()
+        cls.conn.close()
+
+    def setUp(self):
+        # Reinicia la conexión y el cursor en caso de que se haya producido un error anteriormente
+        self.conn.rollback()
+        self.cursor = self.conn.cursor()
+
+        # Elimina todos los registros de la tabla antes de cada prueba
+        try:
+            self.cursor.execute("DELETE FROM propietarios")
+            self.conn.commit()  # Confirma la transacción para asegurarse de que el cambio se aplique
+        except Exception as e:
+            # Si ocurre algún error al eliminar los registros, imprime el error y revierte la transacción
+            print("Error al eliminar registros:", e)
+            self.conn.rollback()
+
+
+    def test_insercion_correcta(self):
+        # Caso Normal 1: Inserción Correcta de Datos
+        try:
+            InsertData('Juan Pérez', 'password123', 'mensaje secreto')
+            self.cursor.execute("SELECT * FROM propietarios WHERE name = 'Juan Pérez'")
+            result = self.cursor.fetchone()
+            self.assertIsNotNone(result, "Error: El registro no fue insertado correctamente.")
+            self.assertEqual(result[1], 'Juan Pérez', "Error: El nombre del registro no coincide.")
+            self.assertEqual(result[2], 'password123', "Error: La contraseña del registro no coincide.")
+            self.assertEqual(decrypt_message(result[3], 'password123'), 'mensaje secreto', "Error: El mensaje encriptado no coincide.")
+        except Exception as e:
+            self.fail(f"Error inesperado durante la inserción: {e}")
+
+    def test_actualizacion_correcta(self):
+        # Caso Normal 2: Actualización Correcta de Datos
+        try:
+            InsertData('Maria Lopez', 'password123', 'mensaje secreto')
+            UpdateTable('Maria Lopez', 'newpassword1', 'nuevo mensaje secreto')
+            self.cursor.execute("SELECT password, mensajeencriptado FROM propietarios WHERE name = 'Maria Lopez'")
+            result = self.cursor.fetchone()
+            self.assertEqual(result[0], 'newpassword1', "Error: La contraseña no fue actualizada correctamente.")
+            self.assertEqual(decrypt_message(result[1], 'newpassword1'), 'nuevo mensaje secreto', "Error: El mensaje no fue actualizado correctamente.")
+        except Exception as e:
+            self.fail(f"Error inesperado durante la actualización: {e}")
+
+    def test_search_by_name_error(self):
+        # Caso de Error: Búsqueda de un nombre que no existe en la base de datos
+        with self.assertRaises(ErrorNoEncontrado, msg="No se lanzó la excepción ErrorNoEncontrado como se esperaba"):
+            SearchByName("NombreInexistente")       
+
+    def test_eliminacion_correcta(self):
+        # Caso Normal 3: Eliminación Correcta de Datos
+        try:
+            InsertData('Carlos Ruiz', 'password123', 'mensaje secreto')
+            self.cursor.execute("DELETE FROM propietarios WHERE name = 'Carlos Ruiz'")
+            self.conn.commit()
+            self.cursor.execute("SELECT * FROM propietarios WHERE name = 'Carlos Ruiz'")
+            result = self.cursor.fetchone()
+            self.assertIsNone(result, "Error: El registro no fue eliminado correctamente.")
+        except Exception as e:
+            self.fail(f"Error inesperado durante la eliminación: {e}")
+
+    def test_consulta_correcta(self):
+        # Caso Normal 4: Consulta Correcta de Datos
+        try:
+            InsertData('Ana Gomez', 'password123', 'mensaje secreto')
+            resultados = SearchByName('Ana Gomez')
+            self.assertGreater(len(resultados), 0, "Error: La consulta no devolvió los resultados esperados.")
+            self.assertEqual(resultados[0]['nombre'], 'Ana Gomez', "Error: El nombre del resultado no coincide.")
+            self.assertEqual(decrypt_message(resultados[0]['mensaje_encriptado'], 'password123'), 'mensaje secreto', "Error: El mensaje encriptado no coincide.")
+        except ErrorNoEncontrado as e:
+            self.fail(f"Error inesperado durante la consulta: {e}")
+
+    
+    def test_insercion_sin_dato_obligatorio(self):
+        # Caso de Error : Inserción de Datos con Restricción de No Nulos
+        with self.assertRaises(psycopg2.IntegrityError, msg="Error: La inserción sin dato obligatorio no lanzó IntegrityError como se esperaba."):
+            self.cursor.execute("INSERT INTO propietarios (name, mensajeencriptado) VALUES (%s, %s)", (None, encrypt_message('mensaje', 'password123')))
+            self.conn.commit()
+
+    def test_actualizacion_registro_no_existente(self):
+        # Caso de Error : Actualización de Registro No Existente
+        UpdateTable('no.existe@example.com', 'password123', 'mensaje secreto')
+        self.cursor.execute("SELECT * FROM propietarios WHERE name = 'no.existe@example.com'")
+        result = self.cursor.fetchone()
+        self.assertIsNone(result, "Error: Se esperaba que no existiera ningún registro con el nombre 'no.existe@example.com'.")
+
+    def test_create_table_success(self):
+        # Caso de normal: Creación de la tabla cuando no existe
+        try:
+            CreateTable()
+        except psycopg2.Error as e:
+            self.fail(f"Se produjo un error inesperado: {e}")
+
+    # Caso de Error: Intento de creación de tabla cuando ya existe
+    def test_create_table_failure(self):
+        with mock.patch('Controller.UserController.GetCursor') as mock_get_cursor:
+            mock_cursor = mock_get_cursor.return_value
+            mock_cursor.execute.side_effect = Exception("Simulated error")
+
+            with self.assertRaises(ErrorTableCreation, msg="No se lanzó la excepción ErrorTableCreation como se esperaba"):
+                CreateTable()    
+       
+
+    
+            
 class TestEncryption(unittest.TestCase):
 
     # Casos de prueba para encriptar mensajes normales
@@ -161,3 +287,5 @@ class TestDecryption(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
