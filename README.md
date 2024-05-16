@@ -106,6 +106,7 @@ Recuerde que cada carpeta de código fuente debe contener un archivo `__init__.p
 
       -Para correr las pruebas unitarias del programa: `python test\test.py`
   
+**Nota:** Para usar las opciones de las bases de datos deberas crear tu propia base de datos en Neon tech, y pegar las credencial en el archivo de `SecretConfig.py`
 
 ## Contribuciones
 
