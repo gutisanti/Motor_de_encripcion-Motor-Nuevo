@@ -1,6 +1,6 @@
 
-PGHOST="ep-late-dream-a5cakcrc.us-east-2.aws.neon.tech"
-PGDATABASE="project database"
-PGUSER="project database_owner"
-PGPASSWORD="zTZWdVwMJ5L7"
+PGHOST="datos de tu base de datos"
+PGDATABASE="nombre de la base de datos"
+PGUSER="nombre del usuario"
+PGPASSWORD="COntraseña de la bd"
 PGPORT = "5432"
